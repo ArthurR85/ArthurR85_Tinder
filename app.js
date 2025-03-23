@@ -41,7 +41,7 @@ app.post('/login', async (req, res) => {
             return res.render('login', {error: 'Ungültige Zugangsdaten'});
         }
 
-        const user = row[0];
+        const user = rows[0];
 
         const valid = await bcrypt.compare(password, user.password_hash);
         if (!valid) {
@@ -56,7 +56,7 @@ app.post('/login', async (req, res) => {
 }
 });
 
-app.post('/login', (req, res) => {
+/*app.post('/login', (req, res) => {
     const {username, password} = req.body;
     if (username === 'user' && password === 'pass') {
         req.session.user = { username };
@@ -65,17 +65,47 @@ app.post('/login', (req, res) => {
         res.render('login', { error: 'Ungültige Zugangsdaten'});
     }
 
-});
+});*/
 
 app.get('/register', (req, res) => {
     res.render('register');
 });
 
-app.post('/register', (req, res) => {
+app.post ('/register', async (req, res) => {
+    const {username, password, confirmPassword, linkPicture, gender, birthday } = req.body;
+
+    if (password !== confirmPassword) {
+        return res.render('register', { error: 'Die Passwörter stimmen nicht überein'});
+            }
+
+        try {
+            const [existingUser] = await db.execute('Select * from user Where name = ?', [username]);
+            if (existingUser.length > 0){
+                return res.render('register', { error: 'Der Benutzername ist bereits vergeben'});
+            }
+
+            const saltRounds = 12;
+            const passwordHash = await bcrypt.hash(password, saltRounds);
+
+            const [result] = await db.execute(
+                'INSERT INTO user (name, gender, birthday, image_url, password_hash, password) VALUES (?,?,?, ?, ?, ?)',
+                [username, gender, birthday, linkPicture,  passwordHash, password]
+            );
+
+            console.log('Neuer Benutzer registriert, ID:', result.insertId);
+            res.redirect('/login');
+        } catch (err) {
+            console.error(err);
+            res.render('register', {error: 'Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut'});
+    }
+});
+
+
+/*app.post('/register', (req, res) => {
     const {username, password} = req.body;
     console.log('Neuer Benutzer registriert:', username);
     res.redirect('/login');
-});
+});*/
 
 
 
