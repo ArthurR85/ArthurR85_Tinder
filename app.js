@@ -20,6 +20,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
 
+app.get('/', (req, res) => {
+    res.redirect('/login');
+});
 
 app.get('/login', (req, res) => {
 
