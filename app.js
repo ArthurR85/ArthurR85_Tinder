@@ -1,6 +1,8 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const db = require('./config/db');
+const bcrypt = require('bcrypt');
 
 const app = express();
 
@@ -29,6 +31,30 @@ app.get('/login', (req, res) => {
     res.render('login');
 
 })
+
+app.post('/login', async (req, res) => {
+    const {username, password } = req.body;
+
+    try {
+        const [rows] = await db.execute('Select * from user WHERE name = ?', [username]);
+        if (rows.length === 0) {
+            return res.render('login', {error: 'Ungültige Zugangsdaten'});
+        }
+
+        const user = row[0];
+
+        const valid = await bcrypt.compare(password, user.password_hash);
+        if (!valid) {
+            return res.render('login', {error: 'Ungültige Zugangsdaten'});
+        }
+    
+    req.session.user = {id: user.id, name: user.name};
+    res.redirect('/profil');
+}catch (err) {
+    console.error(err);
+    res.render('login', {error: 'Ein Fehler ist aufgetreten'});
+}
+});
 
 app.post('/login', (req, res) => {
     const {username, password} = req.body;
