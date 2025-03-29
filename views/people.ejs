@@ -29,6 +29,10 @@
     .buttons button {
       margin: 5px;
     }
+    .filter-status {
+      text-align: center;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
@@ -40,19 +44,27 @@
     <div class="nav-row">
       <ul class="nav">
         <li class="nav-item"><a class="nav-link" href="/profil">Profil</a></li>
-        <li class="nav-item"><a class="nav-link" href="/people">People</a></li>
+        <li class="nav-item"><a class="nav-link active" href="/people">People</a></li>
         <li class="nav-item"><a class="nav-link" href="/filter">Filter</a></li>
         <li class="nav-item"><a class="nav-link" href="/matches">Matches</a></li>
       </ul>
     </div>
   </nav>
   
-
   <div class="container" style="padding-top: 80px;">
+    <!-- Anzeige des Filterstatus -->
+    <div class="filter-status">
+      <% if (filterActive) { %>
+        <p>Filter: Aktiv</p>
+        <button class="btn btn-warning" onclick="location.href='/filter/deactivate'">Filter deaktivieren</button>
+      <% } else { %>
+        <p>Filter: Deaktiviert</p>
+      <% } %>
+    </div>
+  
     <div class="profile-card">
       <div class="image-container">
-        
-        <img id="profileImage" src="<%= profile ? profile.image_url : '/default.jpg' %>" alt="Profilbild">
+        <img id="profileImage" src="<%= profile && profile.image_url ? profile.image_url : '/default.jpg' %>" alt="Profilbild">
       </div>
       <div class="info">
         <p><strong>Name:</strong> <span id="profileName"><%= profile ? profile.name : 'Kein Profil' %></span></p>
@@ -67,23 +79,19 @@
   </div>
 
   <script>
-    
     function loadNextProfile() {
       fetch('/api/random')
         .then(response => response.json())
         .then(data => {
-          
           document.getElementById('profileImage').src = data.image_url;
           document.getElementById('profileName').textContent = data.name;
           document.getElementById('profileAge').textContent = data.age;
           document.getElementById('profileGender').textContent = data.gender;
-          
           window.currentProfileId = data.id;
         })
         .catch(err => console.error('Fehler beim Laden des nächsten Profils:', err));
     }
     
-
     function handleLike() {
       const currentProfileId = window.currentProfileId; 
       fetch('/like', {
@@ -100,11 +108,9 @@
       });
     }
     
-
     function handleDislike() {
       loadNextProfile();
     }
-
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

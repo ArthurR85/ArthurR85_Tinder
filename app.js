@@ -188,27 +188,56 @@ app.post ('/register', async (req, res) => {
     res.render('profil', { user: dummyUser });
 });*/
 
-app.get('/people', (req, res) => {
-    const randomProfile = {
-        id: 1,
-        name: 'John Doe',
-        age: 28,
-        gender: 'männlich',
-        image_url: "https://xsgames.co/randomusers/assets/avatars/male/74.jpg"
-        
-    };
-    res.render('people', {profile: randomProfile});
+app.get('/people', async (req, res) => {
+    let query = 'SELECT id, name, TIMESTAMPDIFF(YEAR, birthday, CURDATE()) AS age, gender, image_url FROM user';
+    const params = [];
+    let filterActive = false;
+    if (req.session.filter) {
+        const { genderPreference, minAge, maxAge } = req.session.filter;
+        const conditions = [];
+        if (genderPreference) {
+            conditions.push('gender = ?');
+            params.push(genderPreference);
+        }
+        if (minAge) {
+            conditions.push('TIMESTAMPDIFF(YEAR, birthday, CURDATE()) >= ?');
+            params.push(Number(minAge));
+        }
+        if (maxAge) {
+            conditions.push('TIMESTAMPDIFF(YEAR, birthday, CURDATE()) <= ?');
+            params.push(Number(maxAge));
+        }
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+            filterActive = true;
+        }
+    }
+    query += ' ORDER BY RAND() LIMIT 1';
+    
+    console.log("Filter Query:", query, "Params:", params);
+    try {
+        const [rows] = await db.execute(query, params);
+        const randomProfile = rows[0] || {};
+        res.render('people', { profile: randomProfile, filterActive });
+    } catch (err) {
+        console.error(err);
+        res.render('people', { error: 'Fehler beim Laden der Profile', profile: {}, filterActive });
+    }
 });
 
+
+
+
 app.get('/filter', (req, res) => {
-    res.render('filter');
+    res.render('filter', {error: null});
 });
 
 app.post('/filter', (req, res) => {
-    const {genderPreference, minAge, maxAge } = req.body;
-    console.log('Gespeicherte Filter:', genderPreference, minAge, maxAge);
+    const { genderPreference, minAge, maxAge } = req.body;
+    req.session.filter = { genderPreference, minAge, maxAge };
     res.redirect('/people');
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
@@ -265,3 +294,47 @@ app.get('/profil/edit', async (req, res) => {
     res.status(500).json({ error: 'Fehler beim Aktualisieren deines Profils' });
   }
 });
+
+app.get('/api/random', async (req, res) => {
+    let query = 'SELECT id, name, TIMESTAMPDIFF(YEAR, birthday, CURDATE()) AS age, gender, image_url FROM user';
+    const params = [];
+    
+    if (req.session.filter) {
+      const { genderPreference, minAge, maxAge } = req.session.filter;
+      const conditions = [];
+      if (genderPreference) {
+        conditions.push('gender = ?');
+        params.push(genderPreference);
+      }
+      if (minAge) {
+        conditions.push('TIMESTAMPDIFF(YEAR, birthday, CURDATE()) >= ?');
+        params.push(Number(minAge));
+      }
+      if (maxAge) {
+        conditions.push('TIMESTAMPDIFF(YEAR, birthday, CURDATE()) <= ?');
+        params.push(Number(maxAge));
+      }
+      if (conditions.length > 0) {
+        query += ' WHERE ' + conditions.join(' AND ');
+      }
+    }
+    
+    query += ' ORDER BY RAND() LIMIT 1';
+    
+    try {
+      const [rows] = await db.execute(query, params);
+      if (rows.length === 0) {
+        return res.status(404).json({ error: 'Kein passendes Profil gefunden' });
+      }
+      res.json(rows[0]);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Fehler beim Laden des Profils' });
+    }
+  });
+  
+  app.get('/filter/deactivate', (req, res) => {
+    req.session.filter = null;
+    res.redirect('/people');
+});
+
