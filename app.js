@@ -67,6 +67,47 @@ app.post('/login', async (req, res) => {
 
 });*/
 
+app.post ('/like', async (req, res) => {
+    if(!req.session.user) return res.status(401).send('Nicht autorisiert');
+
+    const likerID = req.session.user.id;
+    const {liked_id} =req.body;
+
+    try {
+        await db.execute('INSERT INTO liker_id, liked_id) VALUES (?, ?)', [likerID, liked_id]);
+
+        const [rows] = await db.execute('SELECT * FROM likes WHERE liker_id = ? AND liked_id = ?' [liked_id, likerID] );
+        
+        if (rows.length > 0) {
+            const user1_id = Math.min(likerID, liked_id);
+            const user2_id = Math.max(likerID, liked_id);
+
+            await db.execute('INSERT IGNORE INTO matches (user1_id, user2_id) VALUES (?,?)', [user1_id, user2_id]);
+        }
+        res.joson({success: true});
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({error: 'Fehler beim Verarbeiten des Likes'});
+    }
+});
+
+app.get('/matches', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+
+    const userId = req.session.user.id;
+
+    try {
+        const [matches] = await db.execute(
+            'SELECT m.id, u.name, u.image_url, m.matched_at FROM matches m JOIN user u ON (u.id = CASE WHEN m.user1_id = ? THEN m.user2_id ELSE m.user1_id END')
+            WHERE matches.user1_id = ? OR m.user2_id = ?', [userId, userId, userId]
+        );
+        res.render('matches', {matches });
+    }catch (err) {
+        console.error(err);
+        res.render('matches', {error: 'Fehler beim Laden der Matches'});
+    }
+});
+
 app.get('/register', (req, res) => {
     res.render('register');
 });
