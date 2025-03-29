@@ -98,15 +98,18 @@ app.get('/matches', async (req, res) => {
 
     try {
         const [matches] = await db.execute(
-            'SELECT m.id, u.name, u.image_url, m.matched_at FROM matches m JOIN user u ON (u.id = CASE WHEN m.user1_id = ? THEN m.user2_id ELSE m.user1_id END')
-            WHERE matches.user1_id = ? OR m.user2_id = ?', [userId, userId, userId]
+            'SELECT m.id, u.name, u.image_url, m.matched_at ' + 'FROM matches m ' +
+            'JOIN user u ON (u.id = CASE WHEN m.user1_id = ? THEN m.user2_id ELSE m.user1_id END) ' +
+            'WHERE m.user1_id = ? OR m.user2_id = ?',
+            [userId, userId, userId]
         );
-        res.render('matches', {matches });
-    }catch (err) {
+        res.render('matches', { matches });
+    } catch (err) {
         console.error(err);
-        res.render('matches', {error: 'Fehler beim Laden der Matches'});
+        res.render('matches', { error: 'Fehler beim Laden der Matches' });
     }
 });
+
 
 app.get('/register', (req, res) => {
     res.render('register');
