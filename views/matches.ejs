@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Deine Matches</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Deine Matches</h1>
+    <% if (typeof error !== 'undefined') { %>
+        <div class="error"><%= error %></div>
+    <% } %>
+    <% if (matches && matches.length > 0) { %>
+        <ul>
+        <% matches.forEach(match => { %>
+            <li>
+                <img src="<%= match.image_url %>" alt="<%= match.name %>" width="50">
+                <span><%= match.name %></span>
+                <span>Gematcht am: <%= match.matched_at.toLocaleString() %></span>
+            </li>
+        <% }); %>
+        </ul>
+    <% } else { %>
+        <p>Du hast noch keine Matches.</p>
+    <% } %>
+</body>
+</html>
