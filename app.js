@@ -176,7 +176,8 @@ app.get('/profil', (req, res) => {
     const dummyUser = {
         name: "John Doe",
         birthday: "01.01.1990",
-        gender: "männlich"
+        gender: "männlich",
+        image_url: "https://xsgames.co/randomusers/assets/avatars/male/74.jpg"
     };
     res.render('profil', { user: dummyUser });
 });
@@ -186,8 +187,9 @@ app.get('/people', (req, res) => {
         id: 1,
         name: 'John Doe',
         age: 28,
-        image_url: 'https://xsgames.co/randomusers/assets/avatars/male/74.jpg',
-        gender: 'männlich'
+        gender: 'männlich',
+        image_url: "https://xsgames.co/randomusers/assets/avatars/male/74.jpg"
+        
     };
     res.render('people', {profile: randomProfile});
 });
