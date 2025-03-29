@@ -74,9 +74,11 @@ app.post ('/like', async (req, res) => {
     const {liked_id} =req.body;
 
     try {
-        await db.execute('INSERT INTO liker_id, liked_id) VALUES (?, ?)', [likerID, liked_id]);
+        await db.execute('INSERT INTO likes (liker_id, liked_id) VALUES (?, ?)', [likerID, liked_id]);
 
-        const [rows] = await db.execute('SELECT * FROM likes WHERE liker_id = ? AND liked_id = ?' [liked_id, likerID] );
+
+        const [rows] = await db.execute('SELECT * FROM likes WHERE liker_id = ? AND liked_id = ?', [liked_id, likerID]);
+
         
         if (rows.length > 0) {
             const user1_id = Math.min(likerID, liked_id);
@@ -84,7 +86,7 @@ app.post ('/like', async (req, res) => {
 
             await db.execute('INSERT IGNORE INTO matches (user1_id, user2_id) VALUES (?,?)', [user1_id, user2_id]);
         }
-        res.joson({success: true});
+        res.json({success: true});
     } catch (err) {
         console.error(err);
         res.status(500).json({error: 'Fehler beim Verarbeiten des Likes'});
@@ -114,7 +116,7 @@ app.get('/matches', async (req, res) => {
 app.get ('/api/random', async (req, res ) => {
     try {
         const [rows] = await db.execute(
-            'SELECT id, name, TIMESTAMPDIFF(YEAR, birthday, CURDATE()) AS age, gender image_url FROM user ORDER BY RAND() LIMIT 1');
+            'SELECT id, name, TIMESTAMPDIFF(YEAR, birthday, CURDATE()) AS age, gender, image_url FROM user ORDER BY RAND() LIMIT 1');
             if (rows.length === 0) {
                 return res.status(404).json({error: 'Kein Profil gefunden' });
             }
@@ -181,9 +183,11 @@ app.get('/profil', (req, res) => {
 
 app.get('/people', (req, res) => {
     const randomProfile = {
+        id: 1,
         name: 'John Doe',
         age: 28,
-        imageUrl: 'https://example.com/path/to/avatar.jpg'
+        image_url: 'https://xsgames.co/randomusers/assets/avatars/male/74.jpg',
+        gender: 'männlich'
     };
     res.render('people', {profile: randomProfile});
 });
