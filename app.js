@@ -111,6 +111,22 @@ app.get('/matches', async (req, res) => {
 });
 
 
+app.get ('/api/random', async (req, res ) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT id, name, TIMESTAMPDIFF(YEAR, birthday, CURDATE()) AS age, gender image_url FROM user ORDER BY RAND() LIMIT 1');
+            if (rows.length === 0) {
+                return res.status(404).json({error: 'Kein Profil gefunden' });
+            }
+            res.json(rows[0]);
+        } catch (err) {
+            console.error(err);
+            res.status(500).json({ error: 'FEhler beim Laden des Profils'});
+        }
+});
+
+
+
 app.get('/register', (req, res) => {
     res.render('register');
 });

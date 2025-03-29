@@ -6,7 +6,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
   <style>
-    /* Beispielhafte Inline-Styles für die Profilkarte – kannst du in style.css auslagern */
     .profile-card {
       max-width: 400px;
       margin: 0 auto;
@@ -33,7 +32,7 @@
   </style>
 </head>
 <body>
-  <!-- Navigation -->
+  
   <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="/">Tinder-Clone</a>
@@ -61,11 +60,12 @@
     </div>
   </nav>
 
-  <!-- Hauptinhalt -->
+  
   <div class="container" style="padding-top: 80px;">
     <div class="profile-card">
       <div class="image-container">
-        <img id="profileImage" src="<%= profile ? profile.imageUrl : '/default.jpg' %>" alt="Profilbild">
+       
+        <img id="profileImage" src="<%= profile ? profile.image_url : '/default.jpg' %>" alt="Profilbild">
       </div>
       <div class="info">
         <p><strong>Name:</strong> <span id="profileName"><%= profile ? profile.name : 'Kein Profil' %></span></p>
@@ -79,34 +79,31 @@
     </div>
   </div>
 
-  <!-- JavaScript: Laden des nächsten Profils und Like/Dislike-Handler -->
+ 
   <script>
-    // Funktion, um das nächste Profil über die API zu laden
     function loadNextProfile() {
       fetch('/api/random')
         .then(response => response.json())
         .then(data => {
-          // Setze die Daten in der Anzeige
-          document.getElementById('profileImage').src = data.imageUrl;
+          
+          document.getElementById('profileImage').src = data.image_url;
           document.getElementById('profileName').textContent = data.name;
           document.getElementById('profileAge').textContent = data.age;
           document.getElementById('profileGender').textContent = data.gender;
+        
+          window.currentProfileId = data.id;
         })
         .catch(err => console.error('Fehler beim Laden des nächsten Profils:', err));
     }
     
-    // Handler für Like
     function handleLike() {
-      // Optional: Sende den Like an den Server, um ihn zu speichern
-      // Hier ein Beispiel, das den aktuellen Profil-Nutzer (data.id) an die /like-Route sendet:
-      const currentProfileId = window.currentProfileId; // muss aus der API-Antwort gesetzt werden
+      const currentProfileId = window.currentProfileId; 
       fetch('/like', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ liked_id: currentProfileId })
       })
       .then(() => {
-        // Nach dem Like, lade das nächste Profil
         loadNextProfile();
       })
       .catch(err => {
@@ -115,14 +112,9 @@
       });
     }
     
-    // Handler für Dislike
     function handleDislike() {
-      // Beim Dislike einfach das nächste Profil laden
       loadNextProfile();
     }
-    
-    // Optional: Beim Laden der Seite, falls kein Profil initial gesetzt wurde, das nächste Profil laden
-    // loadNextProfile();
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
