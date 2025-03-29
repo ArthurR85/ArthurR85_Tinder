@@ -3,8 +3,14 @@ const session = require('express-session');
 const path = require('path');
 const db = require('./config/db');
 const bcrypt = require('bcrypt');
+const expressLayouts = require('express-ejs-layouts');
 
 const app = express();
+
+app.use(expressLayouts);
+app.set('layout', 'layout');
+
+
 
 app.use(session({
     

@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>People - Tinder-Clone</title>
+  <title>People - Tinder von Arthur</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="/style.css">
   <style>
@@ -33,38 +33,25 @@
 </head>
 <body>
   
-  <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/">Tinder-Clone</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
-              data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 
-              aria-label="Navigation umschalten">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href="/profil">Profil</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="/people">People</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/filter">Filter</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="/matches">Matches</a>
-          </li>
-        </ul>
-      </div>
+  <nav class="navbar navbar-custom fixed-top flex-column">
+    <div class="brand-row">
+      <a class="navbar-brand" href="/">Tinder von Arthur</a>
+    </div>
+    <div class="nav-row">
+      <ul class="nav">
+        <li class="nav-item"><a class="nav-link" href="/profil">Profil</a></li>
+        <li class="nav-item"><a class="nav-link" href="/people">People</a></li>
+        <li class="nav-item"><a class="nav-link" href="/filter">Filter</a></li>
+        <li class="nav-item"><a class="nav-link" href="/matches">Matches</a></li>
+      </ul>
     </div>
   </nav>
-
   
+
   <div class="container" style="padding-top: 80px;">
     <div class="profile-card">
       <div class="image-container">
-       
+        
         <img id="profileImage" src="<%= profile ? profile.image_url : '/default.jpg' %>" alt="Profilbild">
       </div>
       <div class="info">
@@ -79,8 +66,8 @@
     </div>
   </div>
 
- 
   <script>
+    
     function loadNextProfile() {
       fetch('/api/random')
         .then(response => response.json())
@@ -90,12 +77,13 @@
           document.getElementById('profileName').textContent = data.name;
           document.getElementById('profileAge').textContent = data.age;
           document.getElementById('profileGender').textContent = data.gender;
-        
+          
           window.currentProfileId = data.id;
         })
         .catch(err => console.error('Fehler beim Laden des nächsten Profils:', err));
     }
     
+
     function handleLike() {
       const currentProfileId = window.currentProfileId; 
       fetch('/like', {
@@ -112,9 +100,11 @@
       });
     }
     
+
     function handleDislike() {
       loadNextProfile();
     }
+
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
