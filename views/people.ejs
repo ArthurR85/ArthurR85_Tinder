@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>People - Tinder-Clone</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    /* Beispielhafte Inline-Styles für die Profilkarte – kannst du in style.css auslagern */
+    .profile-card {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      text-align: center;
+      background-color: #fff;
+    }
+    .image-container {
+      width: 100%;
+      height: 300px;
+      overflow: hidden;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    .image-container img {
+      width: 100%;
+      object-fit: cover;
+    }
+    .buttons button {
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">Tinder-Clone</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 
+              aria-label="Navigation umschalten">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link" href="/profil">Profil</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/people">People</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/filter">Filter</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/matches">Matches</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hauptinhalt -->
+  <div class="container" style="padding-top: 80px;">
+    <div class="profile-card">
+      <div class="image-container">
+        <img id="profileImage" src="<%= profile ? profile.imageUrl : '/default.jpg' %>" alt="Profilbild">
+      </div>
+      <div class="info">
+        <p><strong>Name:</strong> <span id="profileName"><%= profile ? profile.name : 'Kein Profil' %></span></p>
+        <p><strong>Alter:</strong> <span id="profileAge"><%= profile ? profile.age : '-' %></span></p>
+        <p><strong>Geschlecht:</strong> <span id="profileGender"><%= profile ? profile.gender : '-' %></span></p>
+      </div>
+      <div class="buttons">
+        <button class="btn btn-danger" onclick="handleDislike()">Dislike</button>
+        <button class="btn btn-success" onclick="handleLike()">Like</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript: Laden des nächsten Profils und Like/Dislike-Handler -->
+  <script>
+    // Funktion, um das nächste Profil über die API zu laden
+    function loadNextProfile() {
+      fetch('/api/random')
+        .then(response => response.json())
+        .then(data => {
+          // Setze die Daten in der Anzeige
+          document.getElementById('profileImage').src = data.imageUrl;
+          document.getElementById('profileName').textContent = data.name;
+          document.getElementById('profileAge').textContent = data.age;
+          document.getElementById('profileGender').textContent = data.gender;
+        })
+        .catch(err => console.error('Fehler beim Laden des nächsten Profils:', err));
+    }
+    
+    // Handler für Like
+    function handleLike() {
+      // Optional: Sende den Like an den Server, um ihn zu speichern
+      // Hier ein Beispiel, das den aktuellen Profil-Nutzer (data.id) an die /like-Route sendet:
+      const currentProfileId = window.currentProfileId; // muss aus der API-Antwort gesetzt werden
+      fetch('/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ liked_id: currentProfileId })
+      })
+      .then(() => {
+        // Nach dem Like, lade das nächste Profil
+        loadNextProfile();
+      })
+      .catch(err => {
+        console.error('Fehler beim Senden des Likes:', err);
+        loadNextProfile();
+      });
+    }
+    
+    // Handler für Dislike
+    function handleDislike() {
+      // Beim Dislike einfach das nächste Profil laden
+      loadNextProfile();
+    }
+    
+    // Optional: Beim Laden der Seite, falls kein Profil initial gesetzt wurde, das nächste Profil laden
+    // loadNextProfile();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
