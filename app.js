@@ -171,7 +171,7 @@ app.post ('/register', async (req, res) => {
 
 
 
-app.get('/profil', (req, res) => {
+/*app.get('/profil', (req, res) => {
 
     const dummyUser = {
         name: "John Doe",
@@ -180,7 +180,7 @@ app.get('/profil', (req, res) => {
         image_url: "https://xsgames.co/randomusers/assets/avatars/male/74.jpg"
     };
     res.render('profil', { user: dummyUser });
-});
+});*/
 
 app.get('/people', (req, res) => {
     const randomProfile = {
@@ -207,4 +207,55 @@ app.post('/filter', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server Läuft auf Port ${PORT}`);
+});
+
+app.get('/profil', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+  
+    const userId = req.session.user.id;
+    try {
+      const [rows] = await db.execute('SELECT name, birthday, gender, image_url FROM user WHERE id = ?', [userId]);
+      if (rows.length === 0) return res.redirect('/login');
+      const user = rows[0];
+      res.render('profil', { user });
+    } catch (err) {
+      console.error(err);
+      res.render('profil', { error: 'Fehler beim Laden deines Profils' });
+    }
+  });
+
+app.get('/profil/edit', async (req, res) => {
+    if (!req.session.user) return res.redirect('/login');
+    const userId = req.session.user.id;
+    try {
+      const [rows] = await db.execute('SELECT name, birthday, gender, image_url FROM user WHERE id = ?', [userId]);
+      console.log("GET /profil/edit:", rows);
+      if (rows.length === 0) {
+        return res.redirect('/login');
+      }
+      const user = rows[0];
+      res.render('profil_edit', { user });
+    } catch (err) {
+      console.error(err);
+      res.render('profil_edit', { error: 'Fehler beim Laden deines Profils' });
+    }
+  });
+  
+  
+  app.post('/profil/edit', async (req, res) => {
+  if (!req.session.user) return res.status(401).send('Nicht autorisiert');
+  const userId = req.session.user.id;
+  const { name, birthday, gender, image_url } = req.body;
+  try {
+    await db.execute(
+      'UPDATE user SET name = ?, birthday = ?, gender = ?, image_url = ? WHERE id = ?',
+      [name, birthday, gender, image_url, userId]
+    );
+    
+    req.session.user.name = name;
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Fehler beim Aktualisieren deines Profils' });
+  }
 });
