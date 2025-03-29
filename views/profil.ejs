@@ -39,14 +39,26 @@
       width: 100%;
       object-fit: cover;
     }
-    
+    /* Standardmäßig werden die Editierfelder versteckt */
     .edit-field {
       display: none;
     }
   </style>
+  <% 
+    // Funktion zum Formatieren des Geburtsdatums in DD.MM.JJJJ
+    function formatBirthday(birthday) {
+      if (!birthday) return '-';
+      const date = new Date(birthday);
+      if (isNaN(date)) return birthday;
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return day + '.' + month + '.' + year;
+    }
+  %>
 </head>
 <body>
-  
+  <!-- Gemeinsame Navbar -->
   <nav class="navbar navbar-custom fixed-top flex-column">
     <div class="brand-row">
       <a class="navbar-brand" href="/">Tinder von Arthur</a>
@@ -61,40 +73,38 @@
     </div>
   </nav>
   
-  
   <div class="container">
     <div class="profile-card">
       <div class="image-container">
-        
         <img id="profileImage" src="<%= user && user.image_url ? user.image_url : '/default.jpg' %>" alt="Profilbild">
       </div>
       <div class="info">
         <p>
-          <strong>Name:</strong> 
+          <strong>Name:</strong>
           <span id="displayName" class="display-field"><%= user ? user.name : 'Kein Profil' %></span>
           <input type="text" id="inputName" class="edit-field form-control" value="<%= user ? user.name : '' %>">
         </p>
         <p>
-          <strong>Geburtstag:</strong> 
-          <span id="displayBirthday" class="display-field"><%= user ? user.birthday : '-' %></span>
+          <strong>Geburtsdatum:</strong>
+          <span id="displayBirthday" class="display-field"><%= user && user.birthday ? formatBirthday(user.birthday) : '-' %></span>
           <input type="date" id="inputBirthday" class="edit-field form-control" value="<%= user ? user.birthday : '' %>">
         </p>
         <p>
-          <strong>Geschlecht:</strong> 
-          <span id="displayGender" class="display-field"><%= user ? user.gender : '-' %></span>
+          <strong>Geschlecht:</strong>
+          <span id="displayGender" class="display-field"><%= user ? (user.gender === 'male' ? 'männlich' : (user.gender === 'female' ? 'weiblich' : '-')) : '-' %></span>
           <select id="inputGender" class="edit-field form-control">
             <option value="">Bitte wählen</option>
-            <option value="male" <%= user && user.gender === 'male' ? 'selected' : '' %>>Männlich</option>
-            <option value="female" <%= user && user.gender === 'female' ? 'selected' : '' %>>Weiblich</option>
+            <option value="male" <%= user && user.gender === 'male' ? 'selected' : '' %>>männlich</option>
+            <option value="female" <%= user && user.gender === 'female' ? 'selected' : '' %>>weiblich</option>
           </select>
         </p>
         <p>
-          <strong>Profilbild (URL):</strong> 
-          <span id="displayImageURL" class="display-field"><%= user ? user.image_url : '-' %></span>
+          <!-- Das Bearbeitungsfeld für die Bild-URL ist nur im Edit-Modus sichtbar -->
+          <strong>Profilbild (URL):</strong>
           <input type="text" id="inputImageURL" class="edit-field form-control" value="<%= user ? user.image_url : '' %>">
         </p>
       </div>
-      
+      <!-- Buttons: Standardmäßig "Profil bearbeiten", im Edit-Modus "Speichern" und "Abbrechen" -->
       <button id="editBtn" class="btn btn-primary" onclick="toggleEdit(true)">Profil bearbeiten</button>
       <button id="saveBtn" class="btn btn-success edit-field" onclick="saveProfile()">Speichern</button>
       <button id="cancelBtn" class="btn btn-secondary edit-field" onclick="toggleEdit(false)">Abbrechen</button>
@@ -103,7 +113,7 @@
   
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    
+    // Umschalten zwischen Anzeige- und Editiermodus
     function toggleEdit(editMode) {
       const displayFields = document.querySelectorAll('.display-field');
       const editFields = document.querySelectorAll('.edit-field');
@@ -120,7 +130,7 @@
       }
     }
     
-    
+    // Speichert die Änderungen per AJAX und lädt die Seite neu
     function saveProfile() {
       const name = document.getElementById('inputName').value;
       const birthday = document.getElementById('inputBirthday').value;
